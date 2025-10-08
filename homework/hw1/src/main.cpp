@@ -50,7 +50,7 @@ void selectionSort(int a[], int n) {
     Operation opCompare = p.createOperation("selection-comparisons", n);
     Operation opAssign = p.createOperation("selection-assignments", n);
 
-    for (int i = 0; i < n-1; i++) {
+    for (int i = 0; i < n - 1; i++) {
         int index = i;
         for (int j = i+1; j < n; j++) {
             opCompare.count();
