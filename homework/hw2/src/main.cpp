@@ -17,7 +17,7 @@
 #define STEP_SIZE 100
 
 int m = 5;
-int nr_tests = 100;
+int nr_tests = 5;
 
 enum algorithm {
     BUBBLE = 0,
@@ -159,6 +159,7 @@ void HeapSort(int a[], int n, void (*buildHeap)(int[], int)) {
     buildHeap(a, n);
     int heap_size = n;
     for (int i = n - 1; i > 0; i--) {
+        heapSortAssign.count(3);
         int temp = a[0];
         a[0] = a[i];
         a[i] = temp;
@@ -302,23 +303,27 @@ void perf(int algorithm, int order) {
         p.divideValues("siftup-assignments", m);
         p.addSeries("siftup-total", "siftup-comparisons", "siftup-assignments");
 
-        p.divideValues("heapsort-comparisons", m);
-        p.divideValues("heapsort-assignments", m);
+        p.divideValues("heapsort-comparisons", 2 * m);
+        p.divideValues("heapsort-assignments", 2 * m);
         p.addSeries("heapsort-total", "heapsort-comparisons", "heapsort-assignments");
 
-        p.createGroup("Bottom-Up Operations", "heapify-comparisons", "heapify-assignments", "heapify-total");
-        p.createGroup("Top-Down Operations", "siftup-comparisons", "siftup-assignments", "siftup-total");
-        p.createGroup("HeapSort Operations", "heapsort-comparisons", "heapsort-assignments", "heapsort-total");
-        p.createGroup("Total Operations", "heapify-total", "siftup-total", "heapsort-total");
+        p.addSeries("heapsort-bottomup-total", "heapify-total", "heapsort-total");
+        p.addSeries("heapsort-topdown-total", "siftup-total", "heapsort-total");
+
+        p.createGroup("Heapify (Bottom-Up) Operations", "heapify-comparisons", "heapify-assignments", "heapify-total");
+        p.createGroup("Sift-Up (Top-Down) Operations", "siftup-comparisons", "siftup-assignments", "siftup-total");
+        p.createGroup("HeapSort (Extraction) Operations", "heapsort-comparisons", "heapsort-assignments", "heapsort-total");
+        p.createGroup("Heap Building Operations", "heapify-total", "siftup-total");
+        p.createGroup("Total HeapSort Operations", "heapsort-total", "heapsort-bottomup-total", "heapsort-topdown-total");
     }
 }
 
 void perf_all() {
-    perf(BUBBLE, UNSORTED);
-    p.reset("Heapsort");
     perf(HEAPSORT, UNSORTED);
     p.reset("Heapsort - Worst Case");
     perf(HEAPSORT, ASCENDING);
+    p.reset("Bubble");
+    perf(BUBBLE, UNSORTED);
     p.showReport();
 }
 
