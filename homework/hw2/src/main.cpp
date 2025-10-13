@@ -319,11 +319,11 @@ void perf(int algorithm, int order) {
 }
 
 void perf_all() {
+    perf(BUBBLE, UNSORTED);
+    p.reset("Heapsort - Average Case");
     perf(HEAPSORT, UNSORTED);
     p.reset("Heapsort - Worst Case");
     perf(HEAPSORT, ASCENDING);
-    p.reset("Bubble");
-    perf(BUBBLE, UNSORTED);
     p.showReport();
 }
 
