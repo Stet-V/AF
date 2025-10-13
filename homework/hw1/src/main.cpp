@@ -122,12 +122,14 @@ void demo() {
     int a[] = {64, 34, 25, 12, 22, 11, 90};
     int n = sizeof(a)/sizeof(a[0]);
     int bubbleArr[n], selectionArr[n], insertionArr[n], insertionArr_v2[n];
+
     for (int i=0; i < n; i++) {
         bubbleArr[i] = a[i];
         selectionArr[i] = a[i];
         insertionArr[i] = a[i];
         insertionArr_v2[i] = a[i];
     }
+    
     bubbleSort(bubbleArr, n);
     for (int i=0; i < n; i++)
         printf("%d ", bubbleArr[i]);
@@ -166,13 +168,9 @@ void perf(int order) {
             }
 
             if (order == DESCENDING) {
-                int temp = insertionArr[0];
-                insertionArr[0] = insertionArr[n-1];
-                insertionArr[n-1] = temp;
-
-                temp = insertionArr_v2[0];
-                insertionArr_v2[0] = insertionArr_v2[n-1];
-                insertionArr_v2[n-1] = temp;
+                int temp = selectionArr[0];
+                selectionArr[0] = selectionArr[n-1];
+                selectionArr[n-1] = temp;
             }
 
             bubbleSort(bubbleArr, n);
@@ -210,7 +208,7 @@ void perf(int order) {
     if (order == ASCENDING) {
         p.createGroup("Linear and log-linear curves", "bubble-total", "insertion_v2-total", "insertion-total");
     }
-
+ 
     if (order == DESCENDING) {
         p.createGroup("Linear and log-linear curves", "insertion_v2-comparisons", "selection-assignments");
     }
@@ -234,8 +232,8 @@ void perf_all() {
 
 int main() {
     // printf("Hello, World!\n");
-    // demo();
+    demo();
     // perf();
-    perf_all();
+    // perf_all();
     return 0;
 }
