@@ -24,7 +24,7 @@ enum algorithm {
     HEAPSORT = 1
 };
 
-Profiler p("sortingAlgorithms");
+Profiler p("HeapSort - Average Case");
 
 void bubbleSort(int a[], int n) {
 
@@ -241,19 +241,19 @@ void perf(int algorithm, int order) {
                 delete[] recursiveBubbleArr;
             }
             if (algorithm == HEAPSORT) {
-                int* topDownArr = new int[n];
                 int* bottomUpArr = new int[n];
+                int* topDownArr = new int[n];
 
                 for (int j = 0; j < n; j++) {
-                    topDownArr[j] = a[j];
                     bottomUpArr[j] = a[j];
+                    topDownArr[j] = a[j];
                 }
 
+                HeapSort(bottomUpArr, n, buildHeapTopDown);
                 HeapSort(topDownArr, n, buildHeapTopDown);
-                HeapSort(bottomUpArr, n, buildHeapBottomUp);
 
-                delete[] topDownArr;
                 delete[] bottomUpArr;
+                delete[] topDownArr;
             }
         }
         if (algorithm == BUBBLE) {
@@ -319,11 +319,11 @@ void perf(int algorithm, int order) {
 }
 
 void perf_all() {
-    perf(BUBBLE, UNSORTED);
-    p.reset("Heapsort - Average Case");
     perf(HEAPSORT, UNSORTED);
     p.reset("Heapsort - Worst Case");
     perf(HEAPSORT, ASCENDING);
+    p.reset("Bubble - Average Case");
+    perf(BUBBLE, UNSORTED);
     p.showReport();
 }
 
