@@ -249,7 +249,7 @@ void perf(int algorithm, int order) {
                     topDownArr[j] = a[j];
                 }
 
-                HeapSort(bottomUpArr, n, buildHeapTopDown);
+                HeapSort(bottomUpArr, n, buildHeapBottomUp);
                 HeapSort(topDownArr, n, buildHeapTopDown);
 
                 delete[] bottomUpArr;
