@@ -329,11 +329,11 @@ void perf_all() {
 
 int main() {
     // printf("Hello, World!\n");
-    // demo(BUBBLE);
-    // demo(HEAPSORT);
+    demo(BUBBLE);
+    demo(HEAPSORT);
     // perf(BUBBLE, UNSORTED);
     // perf(HEAPSORT, UNSORTED);
     // perf(HEAPSORT, ASCENDING);
-    perf_all();
+    // perf_all();
     return 0;
 }

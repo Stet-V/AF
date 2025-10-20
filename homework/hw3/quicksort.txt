@@ -1,0 +1,3 @@
+best case: 1 3 2 5 7 6 4
+
+insertion sort for hybrid quicksort
