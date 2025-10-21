@@ -4,6 +4,9 @@
 
 #define MAX_SIZE 10000
 #define STEP_SIZE 500
+#define MAX_THRESHOLD 50
+#define NR_TESTS 10
+#define OPTIMAL_THRESHOLD 15
 
 int m = 5;
 
@@ -17,9 +20,11 @@ enum algorithm {
 enum testMode {
     QUICKSORT_ANALYSIS = 0,
     HEAPSORT_VS_QUICKSORT = 1,
+    HYBRID_THRESHOLD_ANALYSIS = 2,
+    QUICKSORT_VS_HYBRID_QUICKSORT = 3
 };
 
-Profiler p("Heapsort & QuickSort");
+Profiler p;
 
 void swap(int &a, int &b) {
     int temp = a;
@@ -91,10 +96,8 @@ int partition(int a[], int left, int right, Operation compare, Operation assign)
             swap(a[i], a[j]);
         }
     }
-
     assign.count(3);
     swap(a[i + 1], a[right]);
-
     return i + 1;
 }
 
@@ -124,7 +127,6 @@ void generateBestCaseQuickSort(int a[], int left, int right) {
 }
 
 void insertionSort(int a[], int n, Operation compare, Operation assign) {
-
     for (int i = 1; i < n; i++) {   
         assign.count();
         int key = a[i];
@@ -147,6 +149,51 @@ void insertionSort(int a[], int n, Operation compare, Operation assign) {
     }
 }
 
+void hybridQuickSort(int a[], int left, int right, int threshold, Operation compare, Operation assign) {
+    if (right - left + 1 <= threshold) {
+        insertionSort(a + left, right - left + 1, compare, assign);
+    } else {
+        if (left < right) {
+            int pivotIndex = partition(a, left, right, compare, assign);
+            hybridQuickSort(a, left, pivotIndex - 1, threshold, compare, assign);
+            hybridQuickSort(a, pivotIndex + 1, right, threshold, compare, assign);
+        }
+    }
+}
+
+void hybridQuickSortWrapper(int a[], int n, int threshold) {
+    Operation hybridQuickSortCompare = p.createOperation("hybrid-quicksort-comparisons", n);
+    Operation hybridQuickSortAssign = p.createOperation("hybrid-quicksort-assignments", n);
+
+    hybridQuickSort(a, 0, n - 1, threshold, hybridQuickSortCompare, hybridQuickSortAssign);
+}
+
+int randomisedPartition(int a[], int left, int right) {
+
+    int randomPivot = left + rand() % (right - left + 1);
+    swap(a[randomPivot], a[right]);
+
+    int pivot = a[right];
+    int i = left - 1;
+
+    for (int j = left; j < right; j++) {
+        if (a[j] <= pivot) {
+            i++;
+            swap(a[i], a[j]);
+        }
+    }
+    swap(a[i + 1], a[right]);
+    return i + 1;
+}
+
+void quickSelect(int a[], int left, int right) {
+    if (left < right) {
+        int pivotIndex = randomisedPartition(a, left, right);
+        quickSelect(a, left, pivotIndex - 1);
+        quickSelect(a, pivotIndex + 1, right);
+    }
+}
+
 void demo(int algorithm) {
     int a[] = {64, 34, 25, 12, 22, 11, 90};
     int n = sizeof(a)/sizeof(a[0]);
@@ -154,8 +201,10 @@ void demo(int algorithm) {
     switch (algorithm) {
         case QUICKSORT: {
             int quickSortArray[n];
+
             populateArray(a, quickSortArray, n);
             quickSortWrapper(quickSortArray, n);
+
             printf("Quicksort: \n");
             for (int i = 0; i < n; i++) {
                 printf("%d ", quickSortArray[i]);
@@ -165,8 +214,10 @@ void demo(int algorithm) {
         }
         case HEAPSORT: {
             int heapSortArray[n];
+
             populateArray(a, heapSortArray, n);
             heapSort(heapSortArray, n);
+
             printf("Heapsort: \n");
             for (int i = 0; i < n; i++) {
                 printf("%d ", heapSortArray[i]);
@@ -174,9 +225,44 @@ void demo(int algorithm) {
             printf("\n");
             break;
         }
+        case HYBRID_QUICKSORT: {
+            int hybridQuickSortArray[n];
+
+            populateArray(a, hybridQuickSortArray, n);
+            hybridQuickSortWrapper(hybridQuickSortArray, n, OPTIMAL_THRESHOLD);
+
+            printf("Hybrid Quicksort: \n");
+            for (int i = 0; i < n; i++) {
+                printf("%d ", hybridQuickSortArray[i]);
+            }
+            printf("\n");
+        
+            break;
+        }
+        case QUICKSELECT: {
+            int quickSelectArray[n];
+
+            populateArray(a, quickSelectArray, n);
+            quickSelect(quickSelectArray, 0, n - 1);
+
+            printf("QuickSelect: \n");
+            for (int i = 0; i < n; i++) {
+                printf("%d ", quickSelectArray[i]);
+            }
+            printf("\n");
+        
+            break;
+        }
         default:
             break;
     }
+}
+
+void demo_all() {
+    demo(QUICKSORT);
+    demo(HEAPSORT);
+    demo(HYBRID_QUICKSORT);
+    demo(QUICKSELECT);
 }
 
 void perf(int algorithm, int order) {
@@ -188,19 +274,50 @@ void perf(int algorithm, int order) {
             switch (algorithm) {
                 case QUICKSORT: {
                     int* quickSortArray = new int[n];
+
                     populateArray(a, quickSortArray, n);
                     if (order == ASCENDING) {
                         generateBestCaseQuickSort(quickSortArray, 0, n - 1);
                     }
                     quickSortWrapper(quickSortArray, n);
+
+                    if (order == UNSORTED) {
+                        int* quickSortArrayTime = new int[n];
+                        p.startTimer("quicksort-time", n);
+                        for (int j = 0; j < NR_TESTS; j++) {
+                            populateArray(a, quickSortArrayTime, n);
+                            quickSortWrapper(quickSortArrayTime, n);
+                        }
+                        p.stopTimer("quicksort-time", n);
+                        delete[] quickSortArrayTime;
+                    }  
+
                     delete[] quickSortArray;
                     break;
                 }
                 case HEAPSORT: {
                     int* heapSortArray = new int[n];
+
                     populateArray(a, heapSortArray, n);
                     heapSort(heapSortArray, n);
+
                     delete[] heapSortArray;
+                    break;
+                }
+                case HYBRID_QUICKSORT: {
+                    int* hybridQuickSortArray = new int[n];
+
+                    populateArray(a, hybridQuickSortArray, n);
+                    hybridQuickSortWrapper(hybridQuickSortArray, n, OPTIMAL_THRESHOLD);
+
+                    p.startTimer("hybrid-quicksort-time", n);
+                    for (int j = 0; j < NR_TESTS; j++) {
+                        populateArray(a, hybridQuickSortArray, n);
+                        hybridQuickSortWrapper(hybridQuickSortArray, n, OPTIMAL_THRESHOLD);
+                    }
+                    p.stopTimer("hybrid-quicksort-time", n);
+
+                    delete[] hybridQuickSortArray;
                     break;
                 }
                 default:
@@ -226,9 +343,36 @@ void perf(int algorithm, int order) {
             p.createGroup("Heapsort Operations", "heapsort-comparisons", "heapsort-assignments", "heapsort-total");
             break;
         }
+        case HYBRID_QUICKSORT: {
+            p.divideValues("hybrid-quicksort-comparisons", m);
+            p.divideValues("hybrid-quicksort-assignments", m);
+            p.addSeries("hybrid-quicksort-total", "hybrid-quicksort-comparisons", "hybrid-quicksort-assignments");
+
+            p.createGroup("Hybrid Quicksort Operations", "hybrid-quicksort-comparisons", "hybrid-quicksort-assignments", "hybrid-quicksort-total");
+            break;
+        }
         default:
             break;
     }
+}
+
+void analyzeHybridThreshold() {
+    int* hybridQuickSortArray = new int[MAX_SIZE];
+
+    for (int threshold = 5; threshold <= MAX_THRESHOLD; threshold++) {
+        Operation hybridQuickSortThresholdCompare = p.createOperation("hybrid-quicksort-threshold-comparisons", threshold);
+        Operation hybridQuickSortThresholdAssign = p.createOperation("hybrid-quicksort-threshold-assignments", threshold);
+        for (int i = 0; i < NR_TESTS; i++) {
+            FillRandomArray(hybridQuickSortArray, MAX_SIZE, 10, 50000, false, UNSORTED);
+            hybridQuickSort(hybridQuickSortArray, 0, MAX_SIZE - 1, threshold, hybridQuickSortThresholdCompare, hybridQuickSortThresholdAssign);
+        }
+    }
+    delete[] hybridQuickSortArray;
+    p.divideValues("hybrid-quicksort-threshold-comparisons", NR_TESTS);
+    p.divideValues("hybrid-quicksort-threshold-assignments", NR_TESTS);
+    
+    p.addSeries("hybrid-quicksort-threshold-total", "hybrid-quicksort-threshold-comparisons", "hybrid-quicksort-threshold-assignments");
+    p.createGroup("Hybrid Quicksort Threshold Analysis", "hybrid-quicksort-threshold-comparisons", "hybrid-quicksort-threshold-assignments", "hybrid-quicksort-threshold-total");
 }
 
 void perfAnalysis(int testMode) {
@@ -236,18 +380,34 @@ void perfAnalysis(int testMode) {
         case QUICKSORT_ANALYSIS: {
             p.reset("Quicksort Average Case Analysis");
             perf(QUICKSORT, UNSORTED);
+
             p.reset("Quicksort Best Case Analysis");
             perf(QUICKSORT, ASCENDING);
+
             p.reset("Quicksort Worst Case Analysis");
             perf(QUICKSORT, DESCENDING);
-            p.showReport();
             break;
         }
         case HEAPSORT_VS_QUICKSORT: {
             p.reset("Heapsort vs Quicksort - Average Case");
             perf(HEAPSORT, UNSORTED);
             perf(QUICKSORT, UNSORTED);
-            p.showReport();
+
+            p.createGroup("Heapsort vs Quicksort", "heapsort-total", "quicksort-total");
+            break;
+        }
+        case HYBRID_THRESHOLD_ANALYSIS: {
+            p.reset("Hybrid Quicksort Threshold Analysis");
+            analyzeHybridThreshold();
+            break;
+        }
+        case QUICKSORT_VS_HYBRID_QUICKSORT: {
+            p.reset("Quicksort vs Hybrid Quicksort - Average Case");
+            perf(QUICKSORT, UNSORTED);
+            perf(HYBRID_QUICKSORT, UNSORTED);
+
+            p.createGroup("Quicksort vs Hybrid Quicksort", "quicksort-total", "hybrid-quicksort-total");
+            p.createGroup("Quicksort vs Hybrid Quicksort Times", "quicksort-time", "hybrid-quicksort-time");
             break;
         }
         default:
@@ -255,12 +415,29 @@ void perfAnalysis(int testMode) {
     }
 }
 
+void perf_all() {
+    perfAnalysis(QUICKSORT_ANALYSIS);
+
+    perfAnalysis(HEAPSORT_VS_QUICKSORT);
+
+    perfAnalysis(HYBRID_THRESHOLD_ANALYSIS);
+
+    perfAnalysis(QUICKSORT_VS_HYBRID_QUICKSORT);
+    p.showReport();
+}
+
 int main() {
     // printf("Hello World!\n");
     // demo(HEAPSORT);
     // demo(QUICKSORT);
+    // perfAnalysis(QUICKSORT_ANALYSIS);
     // perf(HEAPSORT, UNSORTED);
-    perfAnalysis(HEAPSORT_VS_QUICKSORT);
-    perfAnalysis(QUICKSORT_ANALYSIS);
+    // perfAnalysis(HEAPSORT_VS_QUICKSORT);
+    // demo(HYBRID_QUICKSORT);
+    // perfAnalysis(HYBRID_THRESHOLD_ANALYSIS);
+    // perfAnalysis(QUICKSORT_VS_HYBRID_QUICKSORT);
+    // demo_all();
+    perf_all();
+    // p.showReport();
     return 0;
 }
