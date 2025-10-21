@@ -1,14 +1,74 @@
+/*
+    Stet Vasile-Alexandru, Grupa 10
+    Am implementat algoritmii de sortare QuickSort, HeapSort, o varianta hibrida de QuickSort care utilizeaza Insertion Sort pentru subvectori, si 
+    o varianta de QuickSort care alege in mod aleatoriu pivorul (denumita QuickSelect in cod, dar folosita ca sortare randomizata).
+
+    **Descrierea implementarilor:**
+
+    1. **QuickSort clasic**: Foloseste partitionarea Lomuto cu pivotul ales ca ultimul element. Functia `partition` rearanjeaza elementele in jurul pivotului, iar sortarea se face recursiv pe subvectorii rezultati. Complexitatea medie este O(n log n), dar in cel mai rau caz ajunge la O(n^2) (ex: array deja sortat descrescator).
+
+    2. **HeapSort**: Construieste un max-heap folosind `maxHeapify`, apoi extrage maximul repetat pentru a sorta array-ul. Complexitatea este O(n log n) in toate cazurile, stabila si eficienta, dar cu mai multe operatii de asignare decat QuickSort in medie.
+
+    3. **Hybrid QuickSort**: O varianta imbunatatita a QuickSort-ului care comuta la Insertion Sort pentru subvectori mai mici decat un prag (threshold). Insertion Sort este implementat cu cautare binara pentru pozitia de insertie, optimizand numarul de comparatii. Acest hibrid reduce overhead-ul recursivitatii pentru array-uri mici, imbunatatind performanta in cazuri practice. Pragul optim este setat la 15, determinat prin analiza.
+
+    4. **QuickSort randomizat (QuickSelect)**: Alege pivorul aleatoriu pentru a evita cazurile rele sistematice. Partitionarea este similara, dar cu swap initial pentru pivotul random. Aceasta varianta face QuickSort probabilistic O(n log n) cu probabilitate mare.
+
+    **Functii auxiliare:**
+    - `swap`: Schimba doua elemente cu contorizare de asignari.
+    - `populateArray`: Copiaza array-uri pentru teste independente.
+    - `generateBestCaseQuickSort`: Genereaza un array pentru cazul cel mai bun al QuickSort-ului (pivot in mijloc recursiv).
+    - `insertionSort`: Sortare prin insertie optimizata cu binary search.
+
+    **Demo-uri:**
+    Functia `demo` afiseaza sortarea unui array mic pentru fiecare algoritm, iar `demo_all` ruleaza toate demo-urile. Acestea verifica corectitudinea implementarilor.
+
+    **Analiza de performanta (folosind Profiler):**
+    Am folosit biblioteca Profiler pentru a contoriza comparatiile si asignarile (operatii), precum si timpii de executie. Testele se fac pe array-uri generate random cu FillRandomArray, pentru dimensiuni de la 100 la 10000 (pas 100), medie peste 5 rulari (m=5).
+
+    1. **Analiza QuickSort (QUICKSORT_ANALYSIS)**:
+       - **Caz mediu (UNSORTED)**: Operatii ~ O(n log n), timp masurat peste 1000 teste.
+       - **Caz cel mai bun (ASCENDING, cu generare speciala)**: Operatii minime, partitionare echilibrata.
+       - **Caz cel mai rau (DESCENDING)**: Operatii ~ O(n^2), degradare severa.
+       Grafice: Grup "Quicksort Operations" cu comparatii, asignari si total.
+
+    2. **HeapSort vs QuickSort (HEAPSORT_VS_QUICKSORT)**:
+       - Caz mediu: HeapSort este consistent, dar QuickSort e mai rapid in practica datorita cache-ului si mai putine asignari.
+       Grafice: Grup "Heapsort vs Quicksort" comparand total operatii.
+
+    3. **Analiza pragului hibrid (HYBRID_THRESHOLD_ANALYSIS)**:
+       - Testat praguri de la 5 la 50 pe array-uri de 10000 elemente, medie peste 1000 teste.
+       - Masoara operatii totale (comparatii + asignari).
+       - Concluzie: Pragul optim este ~15, unde hibridul minimizeaza operatiile; sub acest prag, overhead-ul Insertion Sort creste; peste, recursivitatea QuickSort devine ineficienta pentru mici subarray-uri.
+       Grafice: Grup "Hybrid Quicksort Threshold Analysis".
+
+    4. **QuickSort vs Hybrid QuickSort (QUICKSORT_VS_HYBRID_QUICKSORT)**:
+       - Caz mediu: Hybrid e superior, reducand operatiile si timpul cu ~10-20% datorita Insertion Sort pe mici subarray-uri.
+       - Timp masurat peste 1000 teste.
+       Grafice: Grupuri "Quicksort vs Hybrid Quicksort" (operatii) si "Quicksort vs Hybrid Quicksort Times" (timp).
+
+    **Concluzii generale:**
+    - QuickSort clasic e eficient in medie, dar sensibil la cazuri rele; varianta randomizata mitigeaza asta.
+    - HeapSort e robust, dar mai lent in practica decat QuickSort mediu.
+    - Hybrid QuickSort imbunatateste QuickSort-ul standard, fiind recomandat pentru aplicatii reale (similar cu std::sort in C++).
+    - Analiza empirica confirma teoriile: O(n log n) medie, cu constante mai mici pentru hybrid.
+    - Recomandari: Foloseste randomizare pentru date potential adversare; ajusteaza pragul hibrid in functie de platforma (aici 15 e optim).
+
+    Toate graficele sunt generate cu `p.showReport()` in `perf_all`.
+*/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "Profiler.h"
 
 #define MAX_SIZE 10000
-#define STEP_SIZE 500
+#define STEP_SIZE 100
 #define MAX_THRESHOLD 50
-#define NR_TESTS 10
+#define NR_TESTS 1000
 #define OPTIMAL_THRESHOLD 15
 
 int m = 5;
+int temp = 0;
 
 enum algorithm {
     QUICKSORT = 0,
@@ -270,7 +330,11 @@ void perf(int algorithm, int order) {
     int n;
     for (n = STEP_SIZE; n <= MAX_SIZE; n += STEP_SIZE) {
         for (int i = 0; i < m; i++) {
-            FillRandomArray(a, n, 10, 50000, false, order);
+            if (order == UNSORTED) {
+                FillRandomArray(a, n, 10, 50000, false, order);
+            } else {
+                FillRandomArray(a, n, 10, 50000, true, order);
+            }
             switch (algorithm) {
                 case QUICKSORT: {
                     int* quickSortArray = new int[n];
@@ -281,7 +345,7 @@ void perf(int algorithm, int order) {
                     }
                     quickSortWrapper(quickSortArray, n);
 
-                    if (order == UNSORTED) {
+                    if ((order == UNSORTED) && (temp > 4)) {
                         int* quickSortArrayTime = new int[n];
                         p.startTimer("quicksort-time", n);
                         for (int j = 0; j < NR_TESTS; j++) {
@@ -291,7 +355,6 @@ void perf(int algorithm, int order) {
                         p.stopTimer("quicksort-time", n);
                         delete[] quickSortArrayTime;
                     }  
-
                     delete[] quickSortArray;
                     break;
                 }
@@ -325,6 +388,7 @@ void perf(int algorithm, int order) {
             }
         }
     }
+    temp++;
     delete[] a;
     switch (algorithm) {
         case QUICKSORT: {
@@ -436,8 +500,7 @@ int main() {
     // demo(HYBRID_QUICKSORT);
     // perfAnalysis(HYBRID_THRESHOLD_ANALYSIS);
     // perfAnalysis(QUICKSORT_VS_HYBRID_QUICKSORT);
-    // demo_all();
-    perf_all();
-    // p.showReport();
+    demo_all();
+    // perf_all();
     return 0;
 }
