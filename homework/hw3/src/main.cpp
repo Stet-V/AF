@@ -31,7 +31,6 @@
        Hybrid e superior, reducand marginal operatiile si timpul de executie.
 */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "Profiler.h"

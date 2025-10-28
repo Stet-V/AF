@@ -1,3 +1,22 @@
+/*
+    Stet Vasile-Alexandru, Grupa 10
+
+    Am implementat un algoritm pentru unirea a k liste sortate inlantuite folosind un min-heap de dimensiune k.
+
+    Functia `generateLists` creaza k liste sortate inlantuite cu un total de n elemente, distribuite aleatoriu intre liste (fiecare lista contine cel putin un element).
+
+    Folosesc o structura `Node` simpla pentru liste inlantuite unilaterale. Listele sunt create in ordine inversa pentru a simula
+    inserari la inceput, dar fiind sortate, ordinea finala este crescatoare.
+
+    Complexitati:
+        Timp: O(n log k)
+        Spatiu: O(k) pentru heap, plus O(n) pentru lista rezultata si listele de input.
+
+    Observatii:
+        Atat pentru k fix (5, 10, 100) si n variabil (100 la 10000, pas 100), cat si pentru n fix (10000) si k variabil (10 la 500, pas 10),
+        numarul de operatii creste liniar cu n si logaritmic cu k.
+*/
+
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
