@@ -428,6 +428,7 @@ void perf_all() {
 
 int main() {
     srand(time(nullptr));
-    perf_all();
+    demo();
+    // perf_all();
     return 0;
 }
