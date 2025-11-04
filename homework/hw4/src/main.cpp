@@ -333,7 +333,7 @@ int main() {
     // demo(GENERATE);
     // demo(MERGE_K_2);
     // demo(MERGE);
-    // demo_all();
-    perf();
+    demo_all();
+    // perf();
     return 0;
 }

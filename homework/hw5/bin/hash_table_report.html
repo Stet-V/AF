@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Effort measurements at various filling factors</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f4f4f4; }
+        h1 { text-align: center; color: #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+        th { background: #3498db; color: white; }
+        .group-0 { background: #e0f7fa; }
+        .group-1 { background: #e8f5e9; }
+        .group-2 { background: #fff9c4; }
+        .group-3 { background: #ffe0b2; }
+        .group-4 { background: #f3e5f5; }
+        .group-5 { background: #e1f5fe; }
+        .group-6 { background: #ffcdd2; }
+        .group-7 { background: #dcedc8; }
+    </style>
+</head>
+<body>
+    <h1>Effort measurements at various filling factors</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Group</th>
+                <th>Filling Factor</th>
+                <th>Avg Effort (found)</th>
+                <th>Max Effort (found)</th>
+                <th>Avg Effort (not found)</th>
+                <th>Max Effort (not found)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="group-0">
+                <td rowspan="5">Before Deletion</td>
+                <td>0.80</td>
+                <td>2.11</td>
+                <td>34</td>
+                <td>6.34</td>
+                <td>47</td>
+            </tr>
+            <tr class="group-0">
+                <td>0.85</td>
+                <td>2.33</td>
+                <td>45</td>
+                <td>10.57</td>
+                <td>71</td>
+            </tr>
+            <tr class="group-0">
+                <td>0.90</td>
+                <td>2.64</td>
+                <td>58</td>
+                <td>17.06</td>
+                <td>99</td>
+            </tr>
+            <tr class="group-0">
+                <td>0.95</td>
+                <td>3.72</td>
+                <td>89</td>
+                <td>37.46</td>
+                <td>178</td>
+            </tr>
+            <tr class="group-0">
+                <td>0.99</td>
+                <td>5.74</td>
+                <td>272</td>
+                <td>111.44</td>
+                <td>730</td>
+            </tr>
+            <tr class="group-1">
+                <td rowspan="1">After Deletion (0.99 -> 0.80)</td>
+                <td>0.80</td>
+                <td>5.99</td>
+                <td>215</td>
+                <td>109.39</td>
+                <td>715</td>
+            </tr>
+       </tbody>
+   </table>
+</body>
+</html>
