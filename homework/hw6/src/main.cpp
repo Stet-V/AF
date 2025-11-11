@@ -36,8 +36,13 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
+#include "Profiler.h"
+
+Profiler p("Inorder Traversal Operations");
 
 #define MAX_CHILDREN 100
+#define MAX_N 10000
 
 typedef struct NodeR2 {
     int key;
@@ -85,35 +90,39 @@ void freeR3Tree(NodeR3* node) {
     free(node);
 }
 
-NodeR3* generateBinaryTree(int depth, int& current_key) {
-    if (depth <= 0) {
+NodeR3* generateBinaryTree(int n) {
+    if (n <= 0) {
         return NULL;
     }
-    NodeR3* node = createNodeR3(current_key++);
-    if (!node) {
-        return NULL;
-    }
-    node->left = generateBinaryTree(depth - 1, current_key);
-    node->right = generateBinaryTree(depth - 1, current_key);
-    return node;
+    NodeR3* root = createNodeR3(rand() % 100);
+    int left_subtree_size = rand() % n;
+    root->left = generateBinaryTree(left_subtree_size);
+    root->right = generateBinaryTree(n - 1 - left_subtree_size);
+    return root;
 }
 
-void recursiveInorder(NodeR3* node) {
+void recursiveInorder(NodeR3* node, Operation operation_counter, boolean print) {
     if (node == NULL) {
         return;
     }
-    recursiveInorder(node->left);
-    printf("%d ", node->key);
-    recursiveInorder(node->right);
+    operation_counter.count();
+    recursiveInorder(node->left, operation_counter, print);
+    if (print) {
+        printf("%d ", node->key);
+    }
+    recursiveInorder(node->right, operation_counter, print);
 }
 
-void iterativeInorder(NodeR3* root) {
+void iterativeInorder(NodeR3* root, Operation operation_counter, boolean print) {
     NodeR3* current = root;
     NodeR3* predecessor = NULL;
 
     while (current != NULL) {
         if (current->left == NULL) {
-            printf("%d ", current->key);
+            operation_counter.count();
+            if (print) {
+                printf("%d ", current->key);
+            }
             current = current->right;
         } else {
             predecessor = current->left;
@@ -125,7 +134,10 @@ void iterativeInorder(NodeR3* root) {
                 current = current->left;
             } else {
                 predecessor->right = NULL;
-                printf("%d ", current->key);
+                operation_counter.count();
+                if (print) {
+                    printf("%d ", current->key);
+                }
                 current = current->right;
             }
         }
@@ -232,12 +244,13 @@ NodeR3* T2(NodeR2* root) {
 
 void demo() {
     int current_key = 1;
-    NodeR3* binary_tree_root = generateBinaryTree(3, current_key);
+    Operation opDummy = p.createOperation("Dummy", 1); // Pentru a evita erori Profiler la crearea de operatii
+    NodeR3* binary_tree_root = generateBinaryTree(10);
     printf("Recursive Inorder:\n");
-    recursiveInorder(binary_tree_root);
+    recursiveInorder(binary_tree_root, opDummy, true);
 
     printf("\nIterative Inorder:\n");
-    iterativeInorder(binary_tree_root);
+    iterativeInorder(binary_tree_root, opDummy, true);
     printf("\n");
 
     int pi[] = {2, 7, 5, 2, 7, 7, -1, 5, 2};
@@ -259,7 +272,23 @@ void demo() {
     freeR3Tree(binary_tree_root);
 }
 
+void perf() {
+    for (int n = 100; n <= MAX_N; n += 100) {
+        Operation opRecursive = p.createOperation("Inorder Recursive", n);
+        Operation opIterative = p.createOperation("Inorder Iterative", n);
+        int current_key = 1;
+        NodeR3* binary_tree_root = generateBinaryTree(n);
+        recursiveInorder(binary_tree_root, opRecursive, false);
+        iterativeInorder(binary_tree_root, opIterative, false);
+        freeR3Tree(binary_tree_root);
+    }
+    p.createGroup("Inorder Traversal Operations", "Inorder Recursive", "Inorder Iterative");
+    p.showReport();
+}
+
 int main() {
+    srand(time(NULL));
     demo();
+    // perf();
     return 0;
 }
