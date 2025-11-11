@@ -25,7 +25,7 @@
 #include <cstring>
 #include <ctime>
 #include "Profiler.h"
-#include "table_profiler.h"
+#include "TableProfiler.h"
 
 #define C1 1
 #define C2 1
@@ -213,21 +213,21 @@ void demo() {
     delete[] hashTable;
 }
 
-void perfBeforeDeletion(const char* filename) {
+void perfBeforeDeletion(Report* report) {
     int* a = new int[N];
     float alpha_values[] = {0.80, 0.85, 0.90, 0.95, 0.99};
     int num_alphas = sizeof(alpha_values) / sizeof(alpha_values[0]);
 
-    double data[num_alphas][5];
+    float data[num_alphas][5];
 
     for (int i = 0; i < num_alphas; i++) {
         float alpha = alpha_values[i];
         
-        double total_avg_ops_found = 0;
-        double total_avg_ops_not_found = 0;
+        float total_avg_ops_found = 0.0;
+        float total_avg_ops_not_found = 0.0;
 
-        int total_max_ops_found = 0;
-        int total_max_ops_not_found = 0;
+        long long total_max_ops_found = 0;
+        long long total_max_ops_not_found = 0;
 
         for (int test = 0; test < NR_TESTS; test++) {
             int n = (int)(alpha * N);
@@ -289,8 +289,8 @@ void perfBeforeDeletion(const char* filename) {
                 }
             }
 
-            double avg_ops_found = (count_found > 0) ? ((double)total_ops_found / count_found) : 0;
-            double avg_ops_not_found = (count_not_found > 0) ? ((double)total_ops_not_found / count_not_found) : 0;
+            float avg_ops_found = (count_found > 0) ? ((float)total_ops_found / count_found) : 0.0f;
+            float avg_ops_not_found = (count_not_found > 0) ? ((float)total_ops_not_found / count_not_found) : 0.0f;
 
             total_avg_ops_found += avg_ops_found;
             total_max_ops_found += max_ops_found;
@@ -301,28 +301,28 @@ void perfBeforeDeletion(const char* filename) {
             delete[] search_keys;
         }
 
-        data[i][0] = (double)alpha;
+        data[i][0] = alpha;
         data[i][1] = total_avg_ops_found / NR_TESTS;
-        data[i][2] = (double)total_max_ops_found / NR_TESTS;
+        data[i][2] = (float)total_max_ops_found / NR_TESTS;
         data[i][3] = total_avg_ops_not_found / NR_TESTS;
-        data[i][4] = (double)total_max_ops_not_found / NR_TESTS;
+        data[i][4] = (float)total_max_ops_not_found / NR_TESTS;
     }
 
-    addGroup(filename, "Before Deletion", data, num_alphas);
+    addGroup(report, "Before Deletion", data, num_alphas);
     delete[] a;
 }
 
-void profileAfterDeletion(const char* filename) {
+void profileAfterDeletion(Report* report) {
     int* a = new int[N];
     
     float alpha_initial = 0.99;
     float alpha_final = 0.80;
 
-    double total_avg_ops_found = 0;
-    double total_avg_ops_not_found = 0;
+    float total_avg_ops_found = 0.0;
+    float total_avg_ops_not_found = 0.0;
 
-    int total_max_ops_found = 0;
-    int total_max_ops_not_found = 0;
+    long long total_max_ops_found = 0;
+    long long total_max_ops_not_found = 0;
 
     for (int test = 0; test < NR_TESTS; test++) {
         int n_initial = (int)(alpha_initial * N);
@@ -392,8 +392,8 @@ void profileAfterDeletion(const char* filename) {
             }
         }
 
-        double avg_ops_found = (count_found > 0) ? ((double)total_ops_found / count_found) : 0;
-        double avg_ops_not_found = (count_not_found > 0) ? ((double)total_ops_not_found / count_not_found) : 0;
+        float avg_ops_found = (count_found > 0) ? ((float)total_ops_found / count_found) : 0.0f;
+        float avg_ops_not_found = (count_not_found > 0) ? ((float)total_ops_not_found / count_not_found) : 0.0f;
 
         total_avg_ops_found += avg_ops_found;
         total_max_ops_found += max_ops_found;
@@ -404,26 +404,34 @@ void profileAfterDeletion(const char* filename) {
         delete[] search_keys;
     }
 
-    double data[1][5];
-    data[0][0] = (double)alpha_final;
+    float data[1][5];
+    data[0][0] = alpha_final;
     data[0][1] = total_avg_ops_found / NR_TESTS;
-    data[0][2] = (double)total_max_ops_found / NR_TESTS;
+    data[0][2] = (float)total_max_ops_found / NR_TESTS;
     data[0][3] = total_avg_ops_not_found / NR_TESTS;
-    data[0][4] = (double)total_max_ops_not_found / NR_TESTS;
+    data[0][4] = (float)total_max_ops_not_found / NR_TESTS;
 
     char group_name[100];
     sprintf(group_name, "After Deletion (%.2f -> %.2f)", alpha_initial, alpha_final);
-    addGroup(filename, group_name, data, 1);
+    addGroup(report, group_name, data, 1);
 
     delete[] a;
 }
 
 void perf_all() {
-    const char* filename = "hash_table_report.html";
-    initReport(filename, "Effort measurements at various filling factors");
-    perfBeforeDeletion(filename);
-    profileAfterDeletion(filename);
-    finaliseReport(filename);
+    const char* headers[] = {
+        "Load Factor (α)",
+        "Avg Ops Found",
+        "Max Ops Found",
+        "Avg Ops Not Found",
+        "Max Ops Not Found"
+    };
+    Report* report = initReport("report.html", "Effort measurements at various filling factors", headers, 5);
+
+    perfBeforeDeletion(report);
+    profileAfterDeletion(report);
+
+    closeReport(report);
 }
 
 int main() {
