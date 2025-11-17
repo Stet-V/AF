@@ -244,7 +244,7 @@ NodeR3* T2(NodeR2* root) {
 
 void demo() {
     int current_key = 1;
-    Operation opDummy = p.createOperation("Dummy", 1); // Pentru a evita erori Profiler la crearea de operatii
+    Operation opDummy = p.createOperation("Dummy", 1);
     NodeR3* binary_tree_root = generateBinaryTree(10);
     printf("Recursive Inorder:\n");
     recursiveInorder(binary_tree_root, opDummy, true);
