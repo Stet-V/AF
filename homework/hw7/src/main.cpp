@@ -359,9 +359,9 @@ void demo() {
     
     for (int i = 0; i < 3; i++) {
         int rank = 1 + rand() % n;
-        // if (i == 0) {
-        //     rank = 5;
-        // } 
+        if (i == 0) {
+            rank = 5;
+        } 
         BSTNode* selectedNode = OS_Select(root, rank, dummyCount);
         if (selectedNode) {
             printf("Rank: %d, Key: %d.\n", rank, selectedNode->key);
@@ -410,7 +410,7 @@ void perf() {
 
 int main() {
     srand(time(NULL));
-//    demo();
-    perf();
+    demo();
+    // perf();
     return 0;
 }
