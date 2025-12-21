@@ -3,7 +3,7 @@
 #include "bfs.h"
 
 /*
-    Stet Vasile-Alexandru,, Grupa 10
+    Stet Vasile-Alexandru, Grupa 10
 
     Am implementat algoritmul BFS (Breadth-First Search) pentru parcurgerea grafurilor reprezentate sub forma de grila,
     utilizand structuri de date pentru noduri si grafuri. Am inclus si functii auxiliare pentru afisarea arborelui BFS,
